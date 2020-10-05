@@ -1,4 +1,4 @@
-FROM _/python:3.8-alpine
+FROM python:3.8-alpine
 
 # set python to use utf-8 rather than ascii.
 ENV PYTHONIOENCODING="UTF-8"
