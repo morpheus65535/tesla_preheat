@@ -7,7 +7,7 @@ ENV PYTHONIOENCODING="UTF-8"
 ENV TZ="Etc/UTC"
 
 RUN apk add --update --no-cache git py3-pip && \
-    git clone -b master --single-branch https://github.com/morpheus65535/tesla_preheat.git /tesla && \
+    git clone -b main --single-branch https://github.com/morpheus65535/tesla_preheat.git /tesla && \
     pip3 install -r /tesla/requirements.txt
 
 CMD ["python", "/tesla/tesla.py"]
