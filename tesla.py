@@ -1,10 +1,11 @@
 import teslapy
 import os
-from apscheduler.schedulers.background import BlockingScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import utc, timezone
 from datetime import datetime, timedelta
 import logging
 import sys
+import time
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -126,23 +127,27 @@ class TeslaPreHeat:
         scheduler.add_job(tesla_preheat.stop_preheat, 'date', next_run_time=end_time, id='stop_preheat')
 
     def stop_preheat(self):
+        logger.info('Waking up vehicle...')
         self.vehicle.sync_wake_up()
+        logger.info('Vehicle awake and waiting for command')
+
+        logger.info('Getting vehicle state...')
         vehicle_data = self.vehicle.get_vehicle_data()
-        if 'drive_state' in vehicle_data:
-            if 'shift_state' in vehicle_data['drive_state']:
-                if not vehicle_data['drive_state']['shift_state']:
-                    logger.info('Stopping preheating...')
-                    self.vehicle.command('CLIMATE_OFF')
-                    logger.info('Preheating stopped at %s', datetime.now(timezone(TZ)).strftime("%m/%d/%Y, %H:%M:%S"))
-                else:
-                    logger.info('Preheating won\'t be stopped as vehicle is in function')
+        vehicle_state = vehicle_data['drive_state']['shift_state']
+        logger.info('Current vehicle state: %s', vehicle_state if vehicle_state else 'Parked')
+        if not vehicle_state:
+            logger.info('Stopping preheating...')
+            self.vehicle.command('CLIMATE_OFF')
+            logger.info('Preheating stopped at %s', datetime.now(timezone(TZ)).strftime("%m/%d/%Y, %H:%M:%S"))
+        else:
+            logger.info('Preheating won\'t be stopped as vehicle is in function')
 
         logger.info('Next preheating will happen at %s', scheduler.get_job('start_preheat').next_run_time)
 
 
 tesla_preheat = TeslaPreHeat()
 
-scheduler = BlockingScheduler(timezone=TZ)
+scheduler = BackgroundScheduler(timezone=TZ)
 
 if tesla_preheat.PREHEAT_DAY_OF_WEEK:
     scheduler.add_job(tesla_preheat.start_preheat, 'cron', day_of_week=tesla_preheat.PREHEAT_DAY_OF_WEEK,
@@ -152,3 +157,8 @@ else:
                       minute=tesla_preheat.PREHEAT_MINUTE, id='start_preheat')
 
 scheduler.start()
+
+logger.info('Next preheating will happen at %s', scheduler.get_job('start_preheat').next_run_time)
+
+while True:
+    time.sleep(1)
