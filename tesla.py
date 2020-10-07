@@ -3,6 +3,19 @@ import os
 from apscheduler.schedulers.background import BlockingScheduler
 from pytz import utc, timezone
 from datetime import datetime, timedelta
+import logging
+import sys
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
 TZ = os.getenv('TZ') or utc
 
@@ -43,57 +56,73 @@ class TeslaPreHeat:
         self.CLIENT_ID = 'e4a9949fcfa04068f59abb5a658f2bac0a3428e4652315490b659d5ab3f35a9e'
         self.CLIENT_SECRET = 'c75f14bbadc8bee3a7594412c31416f8300256d7668ea7e6e7f06727bfb9d220'
 
+        logger.info('Trying to retrieve token...')
         self.session = teslapy.Tesla(self.EMAIL, self.PASSWORD, self.CLIENT_ID, self.CLIENT_SECRET)
         self.token = self.session.fetch_token()
+        logger.info('Token retrieved: %s', self.token)
         
         try:
+            logger.info('Retrieving vehicle...')
             self.vehicle = self.session.vehicle_list()[0]
+            logger.info('Selected vehicle name: %s', self.vehicle['display_name'])
         except teslapy.HTTPError as e:
-            print(e)
+            logger.exception(e)
 
     def start_preheat(self):
+        logger.info('Waking up vehicle...')
         self.vehicle.sync_wake_up()
+        logger.info('Vehicle awake and waiting for command')
     
         # Cabin heater
         if self.CABIN_PREHEAT_ENABLED and self.DRIVER_TEMP and self.PASSENGER_TEMP:
+            logger.info('Starting cabin heater...')
             self.vehicle.command('CHANGE_CLIMATE_TEMPERATURE_SETTING', driver_temp=self.DRIVER_TEMP,
                                  passenger_temp=self.PASSENGER_TEMP)
+            logger.info('Vehicle cabin heater started')
+        else:
+            logger.info('Vehicle cabin heating not requested; skipping.')
         self.vehicle.command('CLIMATE_ON')
 
         # Driver seat heater
         if self.DRIVER_SEAT_ENABLED and isinstance(self.DRIVER_SEAT_TEMP, int):
+            logger.info('Starting driver seat heater')
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=0, level=self.DRIVER_SEAT_TEMP)
         elif not self.DRIVER_SEAT_ENABLED or not isinstance(self.DRIVER_SEAT_TEMP, int):
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=0, level=0)
 
         # Passenger seat heater
         if self.PASSENGER_SEAT_ENABLED and isinstance(self.PASSENGER_SEAT_TEMP, int):
+            logger.info('Starting passenger seat heater')
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=1, level=self.PASSENGER_SEAT_TEMP)
         elif not self.PASSENGER_SEAT_ENABLED or not isinstance(self.PASSENGER_SEAT_TEMP, int):
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=1, level=0)
 
         # Rear driver side heater
         if self.REAR_DRIVER_SIDE_SEAT_ENABLED and isinstance(self.REAR_DRIVER_SIDE_SEAT_TEMP, int):
+            logger.info('Starting rear driver side seat heater')
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=2, level=self.REAR_DRIVER_SIDE_SEAT_TEMP)
         elif not self.REAR_DRIVER_SIDE_SEAT_ENABLED or not isinstance(self.REAR_DRIVER_SIDE_SEAT_TEMP, int):
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=2, level=0)
 
-        # There's no heater=3
+        # There's no #3 heater
 
         # Rear center heater
         if self.REAR_CENTER_SEAT_ENABLED and isinstance(self.REAR_CENTER_SEAT_TEMP, int):
+            logger.info('Starting rear center seat heater')
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=4, level=self.REAR_CENTER_SEAT_TEMP)
         elif not self.REAR_CENTER_SEAT_ENABLED or not isinstance(self.REAR_CENTER_SEAT_TEMP, int):
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=4, level=0)
 
         # Rear passenger side heater
         if self.REAR_PASSENGER_SIDE_SEAT_ENABLED and isinstance(self.REAR_PASSENGER_SIDE_SEAT_TEMP, int):
+            logger.info('Starting rear passenger side seat heater')
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=5, level=self.REAR_PASSENGER_SIDE_SEAT_TEMP)
         elif not self.REAR_PASSENGER_SIDE_SEAT_ENABLED or not isinstance(self.REAR_PASSENGER_SIDE_SEAT_TEMP, int):
             self.vehicle.command('REMOTE_SEAT_HEATER_REQUEST', heater=5, level=0)
 
         # Add job to stop the preheating
         end_time = datetime.now(timezone(TZ)) + timedelta(minutes=self.PREHEAT_DURATION)
+        logger.info('Scheduling preheating end job at %s', end_time.strftime("%m/%d/%Y, %H:%M:%S"))
         scheduler.add_job(tesla_preheat.stop_preheat, 'date', next_run_time=end_time, id='stop_preheat')
 
     def stop_preheat(self):
@@ -102,7 +131,13 @@ class TeslaPreHeat:
         if 'drive_state' in vehicle_data:
             if 'shift_state' in vehicle_data['drive_state']:
                 if not vehicle_data['drive_state']['shift_state']:
+                    logger.info('Stopping preheating...')
                     self.vehicle.command('CLIMATE_OFF')
+                    logger.info('Preheating stopped at %s', datetime.now(timezone(TZ)).strftime("%m/%d/%Y, %H:%M:%S"))
+                else:
+                    logger.info('Preheating won\'t be stopped as vehicle is in function')
+
+        logger.info('Next preheating will happen at %s', scheduler.get_job('start_preheat').next_run_time)
 
 
 tesla_preheat = TeslaPreHeat()
