@@ -142,7 +142,7 @@ class TeslaPreHeat:
         else:
             logger.info('Preheating won\'t be stopped as vehicle is in function')
 
-        logger.info('Next preheating will happen at %s', scheduler.get_job('start_preheat').next_run_time)
+        logger.info('Next preheating will occur at %s', scheduler.get_job('start_preheat').next_run_time)
 
 
 tesla_preheat = TeslaPreHeat()
@@ -158,7 +158,7 @@ else:
 
 scheduler.start()
 
-logger.info('Next preheating will happen at %s', scheduler.get_job('start_preheat').next_run_time)
+logger.info('Next preheating will occur at %s', scheduler.get_job('start_preheat').next_run_time)
 
 while True:
     time.sleep(1)
