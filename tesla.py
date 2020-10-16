@@ -72,6 +72,7 @@ class TeslaPreHeat:
     def start_preheat(self):
         logger.info('Waking up vehicle...')
         self.vehicle.sync_wake_up()
+        time.sleep(10)
         logger.info('Vehicle awake and waiting for command')
     
         # Cabin heater
@@ -129,6 +130,7 @@ class TeslaPreHeat:
     def stop_preheat(self):
         logger.info('Waking up vehicle...')
         self.vehicle.sync_wake_up()
+        time.sleep(10)
         logger.info('Vehicle awake and waiting for command')
 
         logger.info('Getting vehicle state...')
