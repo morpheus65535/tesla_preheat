@@ -71,8 +71,17 @@ class TeslaPreHeat:
 
     def start_preheat(self):
         logger.info('Waking up vehicle...')
-        self.vehicle.sync_wake_up()
-        time.sleep(10)
+        for x in range(1, 10):
+            status = self.vehicle.get_vehicle_summary()
+            if status['state'] == 'online':
+                break
+            else:
+                self.vehicle.sync_wake_up()
+                time.sleep(5)
+                continue
+        if status['state'] != 'online':
+            raise VehicleUnavailableException()
+
         logger.info('Vehicle awake and waiting for command')
     
         # Cabin heater
@@ -129,8 +138,17 @@ class TeslaPreHeat:
 
     def stop_preheat(self):
         logger.info('Waking up vehicle...')
-        self.vehicle.sync_wake_up()
-        time.sleep(10)
+        for x in range(1, 10):
+            status = self.vehicle.get_vehicle_summary()
+            if status['state'] == 'online':
+                break
+            else:
+                self.vehicle.sync_wake_up()
+                time.sleep(5)
+                continue
+        if status['state'] != 'online':
+            raise VehicleUnavailableException()
+
         logger.info('Vehicle awake and waiting for command')
 
         logger.info('Getting vehicle state...')
@@ -145,6 +163,10 @@ class TeslaPreHeat:
             logger.info('Preheating won\'t be stopped as vehicle is in function')
 
         logger.info('Next preheating will occur at %s', scheduler.get_job('start_preheat').next_run_time)
+
+
+class VehicleUnavailableException(Exception):
+    logging.error('Vehicle not available.')
 
 
 tesla_preheat = TeslaPreHeat()
