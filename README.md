@@ -14,6 +14,7 @@ docker create \
   -e EMAIL=my_tesla_email \
   -e PASSWORD=my_tesla_password \
   -e CABIN_PREHEAT_ENABLED=1 \
+  -e MAX_DEFROST=1 \
   -e DRIVER_TEMP=22 \
   -e PASSENGER_TEMP=22 \
   -e DRIVER_SEAT_TEMP=2 \
@@ -43,6 +44,7 @@ services:
       - EMAIL=my_tesla_email
       - PASSWORD=my_tesla_password
       - CABIN_PREHEAT_ENABLED=1
+      - MAX_DEFROST=1
       - DRIVER_TEMP=22
       - PASSENGER_TEMP=22
       - DRIVER_SEAT_TEMP=2
@@ -68,6 +70,7 @@ services:
 | `-e DRIVER_TEMP=21` | Integer representation of temperature in celcius for the driver side vent heater (does not support decimal) |
 | `-e PASSENGER_TEMP=21` | Integer representation of temperature in celcius for the passenger side vent heater (does not support decimal) |
 | `-e CABIN_PREHEAT_ENABLED=1` | Enable/disable vent heater (1 for enabled, 0 for disabled) |
+| `-e MAX_DEFROST=1` | Enable/disable maximum defrost (1 for enabled, 0 for disabled) |
 | `-e DRIVER_SEAT_TEMP=2` | Driver heating seat level (0 for disabled, from 1 to 3 to heat) |
 | `-e DRIVER_SEAT_ENABLED=1` | Enable/disable driver heating seat (1 for enabled, 0 for disabled) |
 | `-e PASSENGER_SEAT_TEMP=0` | Passenger heating seat level (0 for disabled, from 1 to 3 to heat) |

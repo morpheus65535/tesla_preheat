@@ -35,6 +35,7 @@ class TeslaPreHeat:
         self.PASSENGER_TEMP = int(os.getenv('PASSENGER_TEMP')) if os.getenv('PASSENGER_TEMP') else None
         self.CABIN_PREHEAT_ENABLED = bool(os.getenv('CABIN_PREHEAT_ENABLED')) if os.getenv('CABIN_PREHEAT_ENABLED') \
             else False
+        self.MAX_DEFROST = bool(os.getenv('MAX_DEFROST')) if os.getenv('MAX_DEFROST') else False
 
         self.DRIVER_SEAT_TEMP = int(os.getenv('DRIVER_SEAT_TEMP')) if os.getenv('DRIVER_SEAT_TEMP') else None
         self.DRIVER_SEAT_ENABLED = bool(os.getenv('DRIVER_SEAT_ENABLED')) if os.getenv('DRIVER_SEAT_ENABLED') else False
@@ -93,6 +94,15 @@ class TeslaPreHeat:
         else:
             logger.info('Vehicle cabin heating not requested; skipping.')
         self.vehicle.command('CLIMATE_ON')
+
+        # Max defrost
+        if self.MAX_DEFROST:
+            logger.info('Starting max defrost...')
+            self.vehicle.command('MAX_DEFROST', on='true')
+            logger.info('Max defrost started')
+        else:
+            self.vehicle.command('MAX_DEFROST', on='false')
+            logger.info('Vehicle cabin heating not requested; skipping.')
 
         # Driver seat heater
         if self.DRIVER_SEAT_ENABLED and isinstance(self.DRIVER_SEAT_TEMP, int):
