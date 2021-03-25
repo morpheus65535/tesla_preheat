@@ -21,8 +21,8 @@ logging.getLogger("apscheduler").setLevel(logging.WARNING)
 TZ = os.getenv('TZ') or utc
 
 # Possible boolean values in the configuration.
-BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True,
-                  '0': False, 'no': False, 'false': False, 'off': False}
+BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True, 1: True, True: True,
+                  '0': False, 'no': False, 'false': False, 'off': False, 0: False, False: False}
 
 
 class TeslaPreHeat:
