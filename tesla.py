@@ -20,6 +20,10 @@ logging.getLogger("apscheduler").setLevel(logging.WARNING)
 
 TZ = os.getenv('TZ') or utc
 
+# Possible boolean values in the configuration.
+BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True,
+                  '0': False, 'no': False, 'false': False, 'off': False}
+
 
 class TeslaPreHeat:
     def __init__(self):
@@ -33,26 +37,27 @@ class TeslaPreHeat:
 
         self.DRIVER_TEMP = int(os.getenv('DRIVER_TEMP')) if os.getenv('DRIVER_TEMP') else None
         self.PASSENGER_TEMP = int(os.getenv('PASSENGER_TEMP')) if os.getenv('PASSENGER_TEMP') else None
-        self.CABIN_PREHEAT_ENABLED = bool(os.getenv('CABIN_PREHEAT_ENABLED')) if os.getenv('CABIN_PREHEAT_ENABLED') \
-            else False
-        self.MAX_DEFROST = bool(os.getenv('MAX_DEFROST')) if os.getenv('MAX_DEFROST') else False
+        self.CABIN_PREHEAT_ENABLED = convert_to_boolean(os.getenv('CABIN_PREHEAT_ENABLED')) if \
+            os.getenv('CABIN_PREHEAT_ENABLED') else False
+        self.MAX_DEFROST = convert_to_boolean(os.getenv('MAX_DEFROST')) if os.getenv('MAX_DEFROST') else False
 
         self.DRIVER_SEAT_TEMP = int(os.getenv('DRIVER_SEAT_TEMP')) if os.getenv('DRIVER_SEAT_TEMP') else None
-        self.DRIVER_SEAT_ENABLED = bool(os.getenv('DRIVER_SEAT_ENABLED')) if os.getenv('DRIVER_SEAT_ENABLED') else False
+        self.DRIVER_SEAT_ENABLED = convert_to_boolean(os.getenv('DRIVER_SEAT_ENABLED')) if \
+            os.getenv('DRIVER_SEAT_ENABLED') else False
         self.PASSENGER_SEAT_TEMP = int(os.getenv('PASSENGER_SEAT_TEMP')) if os.getenv('PASSENGER_SEAT_TEMP') else None
-        self.PASSENGER_SEAT_ENABLED = bool(os.getenv('PASSENGER_SEAT_ENABLED')) if os.getenv('PASSENGER_SEAT_ENABLED') \
-            else False
+        self.PASSENGER_SEAT_ENABLED = convert_to_boolean(os.getenv('PASSENGER_SEAT_ENABLED')) if \
+            os.getenv('PASSENGER_SEAT_ENABLED') else False
         self.REAR_DRIVER_SIDE_SEAT_TEMP = int(os.getenv('REAR_DRIVER_SIDE_SEAT_TEMP')) if \
             os.getenv('REAR_DRIVER_SIDE_SEAT_TEMP') else None
-        self.REAR_DRIVER_SIDE_SEAT_ENABLED = bool(os.getenv('REAR_DRIVER_SIDE_SEAT_ENABLED')) if \
+        self.REAR_DRIVER_SIDE_SEAT_ENABLED = convert_to_boolean(os.getenv('REAR_DRIVER_SIDE_SEAT_ENABLED')) if \
             os.getenv('REAR_DRIVER_SIDE_SEAT_ENABLED') else False
         self.REAR_CENTER_SEAT_TEMP = int(os.getenv('REAR_CENTER_SEAT_TEMP')) if os.getenv('REAR_CENTER_SEAT_TEMP') \
             else None
-        self.REAR_CENTER_SEAT_ENABLED = bool(os.getenv('REAR_CENTER_SEAT_ENABLED')) if \
+        self.REAR_CENTER_SEAT_ENABLED = convert_to_boolean(os.getenv('REAR_CENTER_SEAT_ENABLED')) if \
             os.getenv('REAR_CENTER_SEAT_ENABLED') else False
         self.REAR_PASSENGER_SIDE_SEAT_TEMP = int(os.getenv('REAR_PASSENGER_SIDE_SEAT_TEMP')) if \
             os.getenv('REAR_PASSENGER_SIDE_SEAT_TEMP') else None
-        self.REAR_PASSENGER_SIDE_SEAT_ENABLED = bool(os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED')) if \
+        self.REAR_PASSENGER_SIDE_SEAT_ENABLED = convert_to_boolean(os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED')) if \
             os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED') else False
 
         self.CLIENT_ID = 'e4a9949fcfa04068f59abb5a658f2bac0a3428e4652315490b659d5ab3f35a9e'
@@ -173,6 +178,14 @@ class TeslaPreHeat:
             logger.info('Preheating won\'t be stopped as vehicle is in function')
 
         logger.info('Next preheating will occur at %s', scheduler.get_job('start_preheat').next_run_time)
+
+
+def convert_to_boolean(value):
+    """Return a boolean value translating from other types if necessary.
+    """
+    if value.lower() not in BOOLEAN_STATES:
+        raise ValueError('Not a boolean: %s' % value)
+    return BOOLEAN_STATES[value.lower()]
 
 
 class VehicleUnavailableException(Exception):
