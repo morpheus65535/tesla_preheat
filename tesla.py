@@ -60,11 +60,8 @@ class TeslaPreHeat:
         self.REAR_PASSENGER_SIDE_SEAT_ENABLED = convert_to_boolean(os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED')) if \
             os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED') else False
 
-        self.CLIENT_ID = 'e4a9949fcfa04068f59abb5a658f2bac0a3428e4652315490b659d5ab3f35a9e'
-        self.CLIENT_SECRET = 'c75f14bbadc8bee3a7594412c31416f8300256d7668ea7e6e7f06727bfb9d220'
-
         logger.info('Trying to retrieve token...')
-        self.session = teslapy.Tesla(self.EMAIL, self.PASSWORD, self.CLIENT_ID, self.CLIENT_SECRET)
+        self.session = teslapy.Tesla(self.EMAIL, self.PASSWORD)
         self.token = self.session.fetch_token()
         logger.info('Token retrieved: %s', self.token)
         
