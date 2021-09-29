@@ -12,7 +12,6 @@ docker create \
   --name=tesla_preheat \
   -e TZ=America/Toronto \
   -e EMAIL=my_tesla_email \
-  -e PASSWORD=my_tesla_password \
   -e CABIN_PREHEAT_ENABLED=1 \
   -e MAX_DEFROST=1 \
   -e DRIVER_TEMP=22 \
@@ -42,7 +41,6 @@ services:
     environment:
       - TZ=America/Toronto
       - EMAIL=my_tesla_email
-      - PASSWORD=my_tesla_password
       - CABIN_PREHEAT_ENABLED=1
       - MAX_DEFROST=1
       - DRIVER_TEMP=22
@@ -62,7 +60,6 @@ services:
 | :----: | --- |
 | `-e TZ=America/Toronto` | Specify a timezone to use EG America/Toronto, this is required for Tesla_preheat |
 | `-e EMAIL=America/Toronto` | Email used for your Tesla account, this is required for Tesla_preheat |
-| `-e PASSWORD=America/Toronto` | Password of your Tesla account, this is required for Tesla_preheat |
 | `-e PREHEAT_DAY_OF_WEEK=0,1,2,3,4` | Comma separated list of integer representation of days of the week from Monday(0) to Sunday(6) |
 | `-e PREHEAT_HOUR=7` | Integer representation of hour of the day (0-23) to start preheating your Tesla |
 | `-e PREHEAT_MINUTE=0` | Integer representation of minute of the hour (0-59) to start preheating your Tesla |

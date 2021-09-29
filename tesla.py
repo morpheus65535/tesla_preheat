@@ -28,7 +28,6 @@ BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True, 1: True, Tru
 class TeslaPreHeat:
     def __init__(self):
         self.EMAIL = os.getenv('EMAIL') or None
-        self.PASSWORD = os.getenv('PASSWORD') or None
 
         self.PREHEAT_DAY_OF_WEEK = os.getenv('PREHEAT_DAY_OF_WEEK') or None
         self.PREHEAT_HOUR = int(os.getenv('PREHEAT_HOUR')) or None
@@ -61,7 +60,7 @@ class TeslaPreHeat:
             os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED') else False
 
         logger.info('Trying to retrieve token...')
-        self.session = teslapy.Tesla(self.EMAIL, self.PASSWORD)
+        self.session = teslapy.Tesla(self.EMAIL)
         self.token = self.session.fetch_token()
         logger.info('Token retrieved: %s', self.token)
         
