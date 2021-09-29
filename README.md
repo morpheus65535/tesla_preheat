@@ -3,6 +3,8 @@
 
 ## Usage
 
+You must provide a valid `cache.json` file that can be obtained TeslaPy on a desktop computer with a browser to authenticate with Tesla. They've implemented reCaptcha and it's now impossible to use headless authentication.
+
 Here are some example snippets to help you get started creating a container.
 
 ### docker
@@ -22,6 +24,7 @@ docker create \
   -e PREHEAT_HOUR=7 \
   -e PREHEAT_MINUTE=0 \
   -e PREHEAT_DURATION=15 \
+  -v /path/to/config/cache.json:/tesla/cache.json \
   --restart unless-stopped \
   morpheus65535/tesla_preheat
 ```
@@ -51,6 +54,8 @@ services:
       - PREHEAT_HOUR=7
       - PREHEAT_MINUTE=0
       - PREHEAT_DURATION=15
+    volumes:
+      - /path/to/config/cache.json:/tesla/cache.json
     restart: unless-stopped
 ```
 
