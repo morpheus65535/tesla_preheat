@@ -26,7 +26,6 @@ docker create \
   -e PREHEAT_HOUR=7 \
   -e PREHEAT_MINUTE=0 \
   -e PREHEAT_DURATION=15 \
-  -v /path/to/config/cache.json:/tesla/cache.json \
   --restart unless-stopped \
   morpheus65535/tesla_preheat
 ```
@@ -58,8 +57,6 @@ services:
       - PREHEAT_HOUR=7
       - PREHEAT_MINUTE=0
       - PREHEAT_DURATION=15
-    volumes:
-      - /path/to/config/cache.json:/tesla/cache.json
     restart: unless-stopped
 ```
 
