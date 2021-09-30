@@ -3,7 +3,7 @@
 
 ## Usage
 
-You must provide a valid `cache.json` file that can be obtained TeslaPy on a desktop computer with a browser to authenticate with Tesla. They've implemented reCaptcha and it's now impossible to use headless authentication.
+You must provide a valid anti-captcha.com APIKEY to solve the reCaptcha implemented by Tesla.
 
 Here are some example snippets to help you get started creating a container.
 
@@ -14,6 +14,8 @@ docker create \
   --name=tesla_preheat \
   -e TZ=America/Toronto \
   -e EMAIL=my_tesla_email \
+  -e PASSWORD=my_tesla_password \
+  -e ANTI_CAPTCHA_APIKEY=my_anti_captcha_com_apikey \
   -e CABIN_PREHEAT_ENABLED=1 \
   -e MAX_DEFROST=1 \
   -e DRIVER_TEMP=22 \
@@ -44,6 +46,8 @@ services:
     environment:
       - TZ=America/Toronto
       - EMAIL=my_tesla_email
+      - PASSWORD=my_tesla_password
+      - ANTI_CAPTCHA_APIKEY=my_anti_captcha_com_apikey
       - CABIN_PREHEAT_ENABLED=1
       - MAX_DEFROST=1
       - DRIVER_TEMP=22
@@ -64,7 +68,9 @@ services:
 | Parameter | Function |
 | :----: | --- |
 | `-e TZ=America/Toronto` | Specify a timezone to use EG America/Toronto, this is required for Tesla_preheat |
-| `-e EMAIL=America/Toronto` | Email used for your Tesla account, this is required for Tesla_preheat |
+| `-e EMAIL=elon@tesla.com` | Email used for your Tesla account, this is required for Tesla_preheat |
+| `-e PASSWORD=starship` | Password used for your Tesla account, this is required for Tesla_preheat |
+| `-e ANTI_CAPTCHA_APIKEY=1c9e6fb13a88daa75470bf2cd73d6154` | APIKEY from your anti-captcha.com account, this is required for Tesla_preheat |
 | `-e PREHEAT_DAY_OF_WEEK=0,1,2,3,4` | Comma separated list of integer representation of days of the week from Monday(0) to Sunday(6) |
 | `-e PREHEAT_HOUR=7` | Integer representation of hour of the day (0-23) to start preheating your Tesla |
 | `-e PREHEAT_MINUTE=0` | Integer representation of minute of the hour (0-59) to start preheating your Tesla |

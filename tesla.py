@@ -7,6 +7,10 @@ import logging
 import sys
 import time
 
+import requests
+from python_anticaptcha import AnticaptchaClient, NoCaptchaTaskProxylessTask
+import re
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -28,6 +32,8 @@ BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True, 1: True, Tru
 class TeslaPreHeat:
     def __init__(self):
         self.EMAIL = os.getenv('EMAIL') or None
+        self.PASSWORD = os.getenv('PASSWORD') or None
+        self.ANTI_CAPTCHA_APIKEY = os.getenv('ANTI_CAPTCHA_APIKEY') or None
 
         self.PREHEAT_DAY_OF_WEEK = os.getenv('PREHEAT_DAY_OF_WEEK') or None
         self.PREHEAT_HOUR = int(os.getenv('PREHEAT_HOUR')) or None
@@ -60,7 +66,7 @@ class TeslaPreHeat:
             os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED') else False
 
         logger.info('Trying to refresh token...')
-        self.session = teslapy.Tesla(self.EMAIL)
+        self.session = teslapy.Tesla(self.EMAIL, authenticator=self.captcha_solver)
         self.session.refresh_token()
         
         try:
@@ -69,6 +75,44 @@ class TeslaPreHeat:
             logger.info('Selected vehicle name: %s', self.vehicle['display_name'])
         except teslapy.HTTPError as e:
             logger.exception(e)
+
+    def captcha_solver(self, login_url):
+        api_key = self.ANTI_CAPTCHA_APIKEY
+        session = requests.Session()
+
+        login_page_content = session.get(login_url)
+
+        sitekey = re.search(r".*sitekey.* : '(.*)'", login_page_content.text).group(1)
+        csrf = re.search(r'name="_csrf".+value="([^"]+)"', login_page_content.text).group(1)
+        transaction_id = re.search(r'name="transaction_id".+value="([^"]+)"', login_page_content.text).group(1)
+
+        client = AnticaptchaClient(api_key)
+        task = NoCaptchaTaskProxylessTask(login_url, sitekey, is_invisible=True)
+        job = client.createTask(task)
+        job.join()
+        solved_captcha = job.get_solution_response()
+
+        if solved_captcha:
+            post_url = 'https://auth.tesla.com/oauth2/v3/authorize?client_id=ownerapi&response_type=code&' \
+                       'scope=openid email offline_access&redirect_uri=https://auth.tesla.com/void/callback&' \
+                       'state=tesla_exporter'
+            headers = {
+                'referer': post_url
+            }
+            data = {
+                'identity': self.EMAIL,
+                'credential': self.PASSWORD,
+                '_csrf': csrf,
+                '_phase': 'authenticate',
+                '_process': '1',
+                'transaction_id': transaction_id,
+                'cancel': '',
+                'g-recaptcha-response': solved_captcha,
+                'recaptcha': solved_captcha,
+            }
+            result = session.post(post_url, data, headers=headers, allow_redirects=True)
+
+            return result.url
 
     def start_preheat(self):
         logger.info('Waking up vehicle...')

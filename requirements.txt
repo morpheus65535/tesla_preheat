@@ -1,3 +1,5 @@
 teslapy
 apscheduler==3.6.3
 pytz
+python-anticaptcha
+requests
