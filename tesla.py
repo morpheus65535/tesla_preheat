@@ -8,7 +8,7 @@ import sys
 import time
 
 import requests
-from python_anticaptcha import AnticaptchaClient, NoCaptchaTaskProxylessTask
+from python_anticaptcha import AnticaptchaClient, NoCaptchaTaskProxylessTask, AnticatpchaException
 import re
 
 logger = logging.getLogger()
@@ -27,6 +27,18 @@ TZ = os.getenv('TZ') or utc
 # Possible boolean values in the configuration.
 BOOLEAN_STATES = {'1': True, 'yes': True, 'true': True, 'on': True, 1: True, True: True,
                   '0': False, 'no': False, 'false': False, 'off': False, 0: False, False: False}
+
+
+class ConfigError(Exception):
+    pass
+
+
+class CaptchaError(Exception):
+    pass
+
+
+class ParsingError(Exception):
+    pass
 
 
 class TeslaPreHeat:
@@ -78,21 +90,31 @@ class TeslaPreHeat:
 
     def captcha_solver(self, login_url):
         api_key = self.ANTI_CAPTCHA_APIKEY
+        if not api_key:
+            raise ConfigError('Missing anti-captcha.com APIKEY environment variable.')
+
+        logging.info('Trying to solve reCaptcha...')
         session = requests.Session()
 
         login_page_content = session.get(login_url)
+        login_page_content.raise_for_status()
 
-        sitekey = re.search(r".*sitekey.* : '(.*)'", login_page_content.text).group(1)
-        csrf = re.search(r'name="_csrf".+value="([^"]+)"', login_page_content.text).group(1)
-        transaction_id = re.search(r'name="transaction_id".+value="([^"]+)"', login_page_content.text).group(1)
+        try:
+            sitekey = re.search(r".*sitekey.* : '(.*)'", login_page_content.text).group(1)
+            csrf = re.search(r'name="_csrf".+value="([^"]+)"', login_page_content.text).group(1)
+            transaction_id = re.search(r'name="transaction_id".+value="([^"]+)"', login_page_content.text).group(1)
+        except:
+            raise ParsingError
 
-        client = AnticaptchaClient(api_key)
-        task = NoCaptchaTaskProxylessTask(login_url, sitekey, is_invisible=True)
-        job = client.createTask(task)
-        job.join()
-        solved_captcha = job.get_solution_response()
-
-        if solved_captcha:
+        try:
+            client = AnticaptchaClient(api_key)
+            task = NoCaptchaTaskProxylessTask(login_url, sitekey, is_invisible=True)
+            job = client.createTask(task)
+            job.join()
+            solved_captcha = job.get_solution_response()
+        except AnticatpchaException:
+            raise CaptchaError
+        else:
             post_url = 'https://auth.tesla.com/oauth2/v3/authorize?client_id=ownerapi&response_type=code&' \
                        'scope=openid email offline_access&redirect_uri=https://auth.tesla.com/void/callback&' \
                        'state=tesla_exporter'
@@ -110,9 +132,14 @@ class TeslaPreHeat:
                 'g-recaptcha-response': solved_captcha,
                 'recaptcha': solved_captcha,
             }
+
             result = session.post(post_url, data, headers=headers, allow_redirects=True)
 
-            return result.url
+            if hasattr(result, 'url'):
+                logging.info('reCaptcha solved. Continuing login process.')
+                return result.url
+            else:
+                raise CaptchaError
 
     def start_preheat(self):
         logger.info('Waking up vehicle...')
