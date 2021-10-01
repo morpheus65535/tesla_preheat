@@ -79,7 +79,9 @@ class TeslaPreHeat:
 
         logger.info('Trying to refresh token...')
         self.session = teslapy.Tesla(self.EMAIL, authenticator=self.captcha_solver,
-                                     cache_file=os.path.join(os.path.join(os.path.dirname(__file__), 'cache.json')))
+                                     cache_file=os.path.join(os.path.join(os.path.dirname(__file__),
+                                                                          'config',
+                                                                          'cache.json')))
         self.session.refresh_token()
         
         try:
