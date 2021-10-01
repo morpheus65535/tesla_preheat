@@ -3,7 +3,7 @@
 
 ## Usage
 
-You must provide a valid anti-captcha.com APIKEY to solve the reCaptcha implemented by Tesla.
+You must provide a valid anti-captcha.com APIKEY to solve the reCaptcha implemented by Tesla. You should bind a volume to store the cached token outside the container.
 
 Here are some example snippets to help you get started creating a container.
 
@@ -26,6 +26,7 @@ docker create \
   -e PREHEAT_HOUR=7 \
   -e PREHEAT_MINUTE=0 \
   -e PREHEAT_DURATION=15 \
+  -v /your/config/path/cache.json:/tesla/cache.json \
   --restart unless-stopped \
   morpheus65535/tesla_preheat
 ```
@@ -57,6 +58,8 @@ services:
       - PREHEAT_HOUR=7
       - PREHEAT_MINUTE=0
       - PREHEAT_DURATION=15
+    volumes:
+      - /your/config/path/cache.json:/tesla/cache.json
     restart: unless-stopped
 ```
 

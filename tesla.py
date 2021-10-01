@@ -78,7 +78,8 @@ class TeslaPreHeat:
             os.getenv('REAR_PASSENGER_SIDE_SEAT_ENABLED') else False
 
         logger.info('Trying to refresh token...')
-        self.session = teslapy.Tesla(self.EMAIL, authenticator=self.captcha_solver)
+        self.session = teslapy.Tesla(self.EMAIL, authenticator=self.captcha_solver,
+                                     cache_file=os.path.join(os.path.join(os.path.dirname(__file__), 'cache.json')))
         self.session.refresh_token()
         
         try:
