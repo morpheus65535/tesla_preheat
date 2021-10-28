@@ -106,7 +106,7 @@ class TeslaPreHeat:
             sitekey = re.search(r".*sitekey.* : '(.*)'", login_page_content.text).group(1)
             csrf = re.search(r'name="_csrf".+value="([^"]+)"', login_page_content.text).group(1)
             transaction_id = re.search(r'name="transaction_id".+value="([^"]+)"', login_page_content.text).group(1)
-        except:
+        except AttributeError:
             raise ParsingError
 
         try:
@@ -145,19 +145,7 @@ class TeslaPreHeat:
                 raise CaptchaError
 
     def start_preheat(self):
-        logger.info('Waking up vehicle...')
-        for x in range(1, 10):
-            status = self.vehicle.get_vehicle_summary()
-            if status['state'] == 'online':
-                break
-            else:
-                self.vehicle.sync_wake_up()
-                time.sleep(5)
-                continue
-        if status['state'] != 'online':
-            raise VehicleUnavailableException()
-
-        logger.info('Vehicle awake and waiting for command')
+        self.wake_vehicle()
     
         # Cabin heater
         if self.CABIN_PREHEAT_ENABLED and self.DRIVER_TEMP and self.PASSENGER_TEMP:
@@ -221,19 +209,7 @@ class TeslaPreHeat:
         scheduler.add_job(tesla_preheat.stop_preheat, 'date', next_run_time=end_time, id='stop_preheat')
 
     def stop_preheat(self):
-        logger.info('Waking up vehicle...')
-        for x in range(1, 10):
-            status = self.vehicle.get_vehicle_summary()
-            if status['state'] == 'online':
-                break
-            else:
-                self.vehicle.sync_wake_up()
-                time.sleep(5)
-                continue
-        if status['state'] != 'online':
-            raise VehicleUnavailableException()
-
-        logger.info('Vehicle awake and waiting for command')
+        self.wake_vehicle()
 
         logger.info('Getting vehicle state...')
         vehicle_data = self.vehicle.get_vehicle_data()
@@ -247,6 +223,23 @@ class TeslaPreHeat:
             logger.info('Preheating won\'t be stopped as vehicle is in function')
 
         logger.info('Next preheating will occur at %s', scheduler.get_job('start_preheat').next_run_time)
+
+    def wake_vehicle(self):
+        logger.info('Waking up vehicle...')
+        status = None
+        for x in range(1, 10):
+            status = self.vehicle.get_vehicle_summary()
+            if status['state'] == 'online':
+                break
+            else:
+                self.vehicle.sync_wake_up()
+                time.sleep(5)
+                continue
+        if not status:
+            raise VehicleUnavailableException()
+        elif status['state'] != 'online':
+            raise VehicleUnavailableException()
+        logger.info('Vehicle awake and waiting for command')
 
 
 def convert_to_boolean(value):
