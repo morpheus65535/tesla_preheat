@@ -82,7 +82,6 @@ class TeslaPreHeat:
                                      cache_file=os.path.join(os.path.join(os.path.dirname(__file__),
                                                                           'config',
                                                                           'cache.json')))
-        self.session.refresh_token()
         
         try:
             logger.info('Retrieving vehicle...')
