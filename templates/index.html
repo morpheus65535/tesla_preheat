@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Tesla Preheat</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
+        <meta name="mobile-web-app-capable" content="yes"/>
+        <meta name="apple-mobile-web-app-capable" content="yes"/>
+
+        <script src="static/js/jquery.min.js"></script>
+        <script src="static/js/semantic.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="static/css/semantic.min.css">
+    </head>
+    <body>
+        <div class="ui container" style="margin-top: 1em;">
+            <h2 class="ui header">
+                <img class="ui middle aligned mini image" src="/static/img/tesla.svg">
+                <div class="content">
+                    Tesla Preheat
+                </div>
+            </h2>
+
+            <div class="ui top attached tabular menu">
+                <a class="active item" data-tab="general">General</a>
+                <a class="item" data-tab="cabin">Cabin</a>
+                <a class="item" data-tab="seats">Seats</a>
+                <a class="item" data-tab="schedule">Schedule</a>
+            </div>
+
+            <div class="ui bottom attached active tab segment" data-tab="general">
+                <div class="ui container">
+                {% if authorized %}
+                    <div class="ui form">
+                        <div class="field">
+                            <label for="logout">Tesla account</label>
+                            <button class="ui button" id="logout">
+                                Logout
+                            </button>
+                            <p></p>
+                            <div class="ui fitted divider"></div>
+                        </div>
+
+                        <div class="field">
+                            <div class="ui right aligned toggle checkbox" id="enabled">
+                                <input type="checkbox" name="enabled" id="enabled_input">
+                                <label for="enabled">Enable automatic preheating</label>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="next_preheat">Next preheat</label>
+                            <input type="text" readonly="" name="next_preheat" id="next_preheat" value="{{ next_preheat }}">
+                        </div>
+
+                        <div class="field">
+                            <button class="ui button" id="preheat_now">Preheat now</button>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="ui form">
+                        <div class="field">
+                            <label for="email">Tesla account email</label>
+                            <div class="ui input" id="email">
+                                <input type="text" id="email_input">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="login">Click here to login to your Tesla account in a new tab. Once successfully logged in, you'll be redirected to a "page not found". Copy the url for this page and close the tab.</label>
+                            <button class="ui secondary button" id="login">
+                                Login
+                            </button>
+                        </div>
+                        <div class="field">
+                            <label for="code_url">Paste the copied url into this text field and click on the "Get token" button.</label>
+                            <div class="ui input" id="code_url">
+                                <input type="text" id="code_url_input">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <button class="ui primary button" id="get_token">
+                                Get token
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+                </div>
+            </div>
+
+            <div class="ui bottom attached tab segment" data-tab="cabin" id="cabin_tab">
+                <div class="ui grid container">
+                    <div class="ui one column grid">
+                        <div class="row">
+                            <div class="ui right aligned toggle checkbox" id="defrost">
+                                <input type="checkbox" name="defrost" id="defrost_input">
+                                <label for="defrost_input">Defrost car</label>
+                            </div>
+                        </div>
+
+                        <div class="ui fitted divider"></div>
+
+                        <div class="row">
+                            <div class="ui right aligned toggle checkbox" id="driver_heater">
+                                <input type="checkbox" name="driver_heater" id="driver_heater_input">
+                                <label for="driver_heater_input">Driver heater</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="ui labeled ticked slider" id="driver_heat_temp"></div>
+                        </div>
+
+                        <div class="row">
+                            <div class="ui right aligned toggle checkbox" id="passenger_heater">
+                                <input type="checkbox" name="passenger_heater" id="passenger_heater_input">
+                                <label for="passenger_heater_input">Passenger heater</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="ui labeled ticked slider" id="passenger_heat_temp"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="ui bottom attached tab segment" data-tab="seats" id="seats_tab">
+                <div class="ui form">
+                    <div class="field">
+                        <label>Front left</label>
+                        <div class="ui selection long dropdown" id="front_left">
+                            <input type="hidden" name="front_left">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="0">Disabled</div>
+                                <div class="item" data-value="1">Low</div>
+                                <div class="item" data-value="2">Medium</div>
+                                <div class="item" data-value="3">High</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Front right</label>
+                        <div class="ui selection long dropdown" id="front_right">
+                            <input type="hidden" name="front_right">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="0">Disabled</div>
+                                <div class="item" data-value="1">Low</div>
+                                <div class="item" data-value="2">Medium</div>
+                                <div class="item" data-value="3">High</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if rear_seat_heaters %}
+                    <div class="field">
+                        <label>Rear left</label>
+                        <div class="ui selection long dropdown" id="rear_left">
+                            <input type="hidden" name="rear_left">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="0">Disabled</div>
+                                <div class="item" data-value="1">Low</div>
+                                <div class="item" data-value="2">Medium</div>
+                                <div class="item" data-value="3">High</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Rear center</label>
+                        <div class="ui selection long dropdown" id="rear_center">
+                            <input type="hidden" name="rear_center">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="0">Disabled</div>
+                                <div class="item" data-value="1">Low</div>
+                                <div class="item" data-value="2">Medium</div>
+                                <div class="item" data-value="3">High</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Rear right</label>
+                        <div class="ui selection long dropdown" id="rear_right">
+                            <input type="hidden" name="rear_right">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="0">Disabled</div>
+                                <div class="item" data-value="1">Low</div>
+                                <div class="item" data-value="2">Medium</div>
+                                <div class="item" data-value="3">High</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="ui bottom attached tab segment" data-tab="schedule" id="schedule_tab">
+                <div class="ui form">
+                    <div class="field">
+                        <label>Days of the week</label>
+                        <div class="ui clearable multiple selection long dropdown" id="days">
+                            <input type="hidden" name="days">
+                            <i class="dropdown icon"></i>
+                            <div class="default text">Select days...
+                            </div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="7">Sunday</div>
+                                <div class="item" data-value="0">Monday</div>
+                                <div class="item" data-value="1">Tuesday</div>
+                                <div class="item" data-value="2">Wednesday</div>
+                                <div class="item" data-value="3">Thursday</div>
+                                <div class="item" data-value="4">Friday</div>
+                                <div class="item" data-value="5">Saturday</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label for="start_time_input">Time of the day</label>
+                        <div class="ui calendar" id="start_time">
+                            <div class="ui input left icon">
+                                <i class="time icon"></i>
+                                <input type="text" placeholder="Time" id="start_time_input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Preheating duration</label>
+                        <div class="ui selection long dropdown" id="duration">
+                            <input type="hidden" name="duration">
+                            <i class="dropdown icon"></i>
+                            <div class="default text"></div>
+                            <div class="scrollhint menu">
+                                <div class="item" data-value="5">5 minutes</div>
+                                <div class="item" data-value="10">10 minutes</div>
+                                <div class="item" data-value="15">15 minutes</div>
+                                <div class="item" data-value="20">20 minutes</div>
+                                <div class="item" data-value="25">25 minutes</div>
+                                <div class="item" data-value="30">30 minutes</div>
+                                <div class="item" data-value="45">45 minutes</div>
+                                <div class="item" data-value="60">60 minutes</div>
+                                <div class="item" data-value="90">90 minutes</div>
+                                <div class="item" data-value="120">120 minutes</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="ui right floated primary button" id="save_form">
+                Save settings
+            </button>
+        </div>
+    </body>
+</html>
+
+<script>
+    $('.menu .item').tab();
+
+    $('.ui.checkbox').checkbox();
+
+    $('.ui.slider')
+        .slider({
+            min: 15,
+            max: 27
+        })
+    ;
+
+    $('.selection.dropdown').dropdown();
+
+    $('.ui.calendar')
+        .calendar({
+            type: 'time',
+            ampm: false
+        })
+    ;
+
+    if ( "{{ authorized }}" === "False") {
+        $("#cabin_tab").addClass('disabled');
+        $("#seats_tab").addClass('disabled');
+        $("#schedule_tab").addClass('disabled');
+    }
+
+    $('#email_input').val("{{ settings.get('general', 'email') }}");
+
+    if ( "{{ settings.getboolean('general', 'enabled') }}" === "True" ) {
+        $("#enabled").checkbox('check');
+    }
+
+    if ( "{{ settings.getboolean('heater', 'defrost') }}" === "True" ) {
+        $("#defrost").checkbox('check');
+    }
+
+    $('#driver_heater').checkbox({
+        fireOnInit: true,
+        onChecked: function() {
+            $('#driver_heat_temp').removeClass('disabled');
+        },
+        onUnchecked: function() {
+            $('#driver_heat_temp').addClass('disabled');
+        }
+    });
+
+    if ( "{{ settings.getboolean('heater', 'driver_enabled') }}" === "True" ) {
+        $("#driver_heater").checkbox('check');
+    }
+
+    $("#driver_heat_temp").slider('set value', "{{ settings.get('heater', 'driver_temp') }}", fireChange=true)
+
+    $('#passenger_heater').checkbox({
+        fireOnInit: true,
+        onChecked: function() {
+            $('#passenger_heat_temp').removeClass('disabled');
+        },
+        onUnchecked: function() {
+            $('#passenger_heat_temp').addClass('disabled');
+        }
+    });
+
+    if ( "{{ settings.getboolean('heater', 'passenger_enabled') }}" === "True" ) {
+        $("#passenger_heater").checkbox('check');
+    }
+
+    $("#passenger_heat_temp").slider('set value', "{{ settings.get('heater', 'passenger_temp') }}", fireChange=true)
+
+    $('#front_left').dropdown('set selected',"{{ settings.get('seat', 'front_left_temp')}}");
+
+    $('#front_right').dropdown('set selected',"{{ settings.get('seat', 'front_right_temp')}}");
+
+    $('#rear_left').dropdown('set selected',"{{ settings.get('seat', 'rear_left_temp')}}");
+
+    $('#rear_center').dropdown('set selected',"{{ settings.get('seat', 'rear_center_temp')}}");
+
+    $('#rear_right').dropdown('set selected',"{{ settings.get('seat', 'rear_right_temp')}}");
+
+    $('#days').dropdown('set selected', [{{ settings.get('schedule', 'days_of_week') }}]);
+
+    $('#start_time').calendar('set date', "{{ settings.get('schedule', 'start_time') }}")
+
+    $('#duration').dropdown('set selected',"{{ settings.get('schedule', 'duration')}}");
+
+    $('#login').on('click', function() {
+        window.open("{{ auth_url | safe }}", '_blank');
+    })
+
+    $('#logout').on('click', function() {
+        window.location.replace("{{ url_for('logout') }}");
+    })
+
+    $('#preheat_now').on('click', function() {
+        window.location.replace("{{ url_for('preheat_now') }}");
+    })
+
+    $('#get_token').on('click', function() {
+        let data = {
+            'email': $('#email_input').val(),
+            'code_url': $('#code_url_input').val(),
+        }
+
+        $.ajax({
+            url: "{{ url_for('authenticate') }}",
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            complete: function() {
+                location.reload();
+            }
+        });
+    })
+
+    $('#save_form').on('click', function() {
+        let data = {
+            'enabled': $('#enabled').checkbox('is checked'),
+            'defrost': $('#defrost').checkbox('is checked'),
+            'driver_enabled': $('#driver_heater').checkbox('is checked'),
+            'driver_temp': $('#driver_heat_temp').slider('get value'),
+            'passenger_enabled': $('#passenger_heater').checkbox('is checked'),
+            'passenger_temp': $('#passenger_heat_temp').slider('get value'),
+            'front_left_temp': $('#front_left').dropdown('get value'),
+            'front_right_temp': $('#front_right').dropdown('get value'),
+            {% if rear_seat_heaters %}
+            'rear_left_temp': $('#rear_left').dropdown('get value'),
+            'rear_center_temp': $('#rear_center').dropdown('get value'),
+            'rear_right_temp': $('#rear_right').dropdown('get value'),
+            {% endif %}
+            'days_of_week': $('#days').dropdown('get value'),
+            'start_time': $('#start_time').calendar('get date').getHours() + ':' +
+                $('#start_time').calendar('get date').getMinutes(),
+            'duration': $('#duration').dropdown('get value'),
+        }
+
+        $.ajax({
+            url: "{{ url_for('save_settings_to_file') }}",
+            method: 'POST',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            complete: function() {
+                location.reload();
+            }
+        });
+    })
+</script>

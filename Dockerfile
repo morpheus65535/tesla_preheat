@@ -10,4 +10,4 @@ RUN apk add --update --no-cache tzdata git py3-pip python3-dev && \
     git clone -b main --single-branch https://github.com/morpheus65535/tesla_preheat.git /tesla && \
     pip3 install -r /tesla/requirements.txt
 
-CMD ["python", "/tesla/tesla.py"]
+CMD ["python", "/tesla/main.py"]

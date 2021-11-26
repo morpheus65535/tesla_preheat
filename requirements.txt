@@ -1,5 +1,6 @@
-teslapy
+git+git://github.com/tdorssers/TeslaPy@master#egg=teslapy
 apscheduler
 pytz
-python-anticaptcha
+flask
 requests
+waitress
