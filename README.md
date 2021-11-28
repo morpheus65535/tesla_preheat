@@ -3,9 +3,9 @@
 
 ## Usage
 
-You must provide a valid anti-captcha.com APIKEY to solve the reCaptcha implemented by Tesla. You should bind a volume to store the cached token outside the container.
+You should bind a volume to store the configuration file and cached token outside the container.
 
-Here are some example snippets to help you get started creating a container.
+If you want to use it directly (without Docker), install `requirements.txt` with PIP and run `main.py`.
 
 ### docker
 

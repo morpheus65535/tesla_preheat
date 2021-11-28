@@ -21,7 +21,7 @@ defaults = {
         'rear_right_temp': '0',
     },
     'schedule': {
-        'days_of_week': '1,2,3,4,5',
+        'days_of_week': '0,1,2,3,4',
         'start_time': "7:15",
         'duration': '15',
     },

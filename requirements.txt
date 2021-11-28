@@ -1,4 +1,4 @@
-git+git://github.com/tdorssers/TeslaPy@master#egg=teslapy
+teslapy>=2.2.0
 apscheduler
 pytz
 flask

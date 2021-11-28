@@ -349,7 +349,7 @@
     $('#duration').dropdown('set selected',"{{ settings.get('schedule', 'duration')}}");
 
     $('#login').on('click', function() {
-        window.open("{{ auth_url | safe }}", '_blank');
+        window.open("{{ auth_url | safe }}".replace("elon%40tesla.com", encodeURIComponent($('#email_input').val())), '_blank');
     })
 
     $('#logout').on('click', function() {
