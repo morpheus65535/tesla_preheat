@@ -39,6 +39,7 @@ class TeslaPreHeat:
     def start_preheat(self):
         self.get_vehicles()
         self.wake_vehicle()
+        self.vehicle.command('CLIMATE_ON')
 
         # Cabin heater
         logger.info('Starting cabin heater...')

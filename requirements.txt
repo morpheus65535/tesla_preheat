@@ -1,4 +1,4 @@
-teslapy>=2.3.0
+teslapy>=2.4.0
 apscheduler
 pytz
 flask

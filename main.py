@@ -31,7 +31,6 @@ def main():
 def preheat_now():
     scheduler.bgscheduler.modify_job(job_id='start_preheat', next_run_time=datetime.now())
     scheduler.add_stop_job()
-    scheduler.configure()
     return redirect(url_for('main'))
 
 
