@@ -20,15 +20,25 @@ class TeslaPreHeat:
         self.vehicle = None
         self.vehicle_data = None
         self.rear_seat_heaters = False
+        self.get_vehicles()
 
     def get_vehicles(self):
+        def _get_vehicle_from_id():
+            vehicles_list = self.session.vehicle_list()
+            if settings.get('general', 'vehicle_id') == 0:
+                return vehicles_list[0]
+            else:
+                return next((x for x in vehicles_list if x['vehicle_id'] == settings.getint('general', 'vehicle_id')),
+                            vehicles_list[0])
+
         if self.session.authorized:
             try:
                 logger.info('Retrieving vehicle...')
-                self.vehicle = self.session.vehicle_list()[0]
+                self.vehicle = _get_vehicle_from_id()
                 logger.info('Selected vehicle name: %s', self.vehicle['display_name'])
-                self.wake_vehicle()
-                self.vehicle_data = self.vehicle.get_vehicle_data()
+                self.vehicle_data = self.vehicle.get_latest_vehicle_data()
+                if 'data' in self.vehicle_data:
+                    self.vehicle_data = self.vehicle_data['data']
                 if 'vehicle_config' in self.vehicle_data:
                     if 'rear_seat_heaters' in self.vehicle_data['vehicle_config']:
                         self.rear_seat_heaters = False if self.vehicle_data['vehicle_config']['rear_seat_heaters'] == 0\

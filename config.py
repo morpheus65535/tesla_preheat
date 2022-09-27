@@ -5,6 +5,7 @@ defaults = {
     'general': {
         'email': 'elon@tesla.com',
         'enabled': False,
+        'vehicle_id': '0',
     },
     'heater': {
         'defrost': False,
@@ -40,6 +41,7 @@ def save_settings(data):
         settings['general']['email'] = str(data['email'])
     else:
         settings['general']['enabled'] = str(data['enabled'])
+        settings['general']['vehicle_id'] = str(data['vehicle_id'])
         settings['heater']['defrost'] = str(data['defrost'])
         settings['heater']['driver_enabled'] = str(data['driver_enabled'])
         settings['heater']['driver_temp'] = str(data['driver_temp'])

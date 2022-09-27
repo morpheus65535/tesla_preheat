@@ -49,6 +49,20 @@
                         </div>
 
                         <div class="field">
+                            <label>Vehicle</label>
+                            <div class="ui selection long dropdown" id="vehicle_id">
+                                <input type="hidden" name="vehicle_id">
+                                <i class="dropdown icon"></i>
+                                <div class="default text"></div>
+                                <div class="scrollhint menu">
+                                    {% for vehicle in vehicles_list %}
+                                    <div class="item" data-value="{{vehicle['vehicle_id']}}">{{vehicle['display_name'] or 'Nameless ('+vehicle['vin']+')'}}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="field">
                             <label for="next_preheat">Next preheat</label>
                             <input type="text" readonly="" name="next_preheat" id="next_preheat" value="{{ next_preheat }}">
                         </div>
@@ -296,6 +310,8 @@
         $("#enabled").checkbox('check');
     }
 
+    $('#vehicle_id').dropdown('set selected',"{{ settings.get('general', 'vehicle_id')}}");
+
     if ( "{{ settings.getboolean('heater', 'defrost') }}" === "True" ) {
         $("#defrost").checkbox('check');
     }
@@ -381,6 +397,7 @@
     $('#save_form').on('click', function() {
         let data = {
             'enabled': $('#enabled').checkbox('is checked'),
+            'vehicle_id': $('#vehicle_id').dropdown('get value'),
             'defrost': $('#defrost').checkbox('is checked'),
             'driver_enabled': $('#driver_heater').checkbox('is checked'),
             'driver_temp': $('#driver_heat_temp').slider('get value'),

@@ -14,9 +14,11 @@ app = Flask(__name__)
 @app.route('/', methods=['GET'])
 def main():
     authorized = False
+    vehicles_list = []
     if tesla_preheat.session.authorized:
         authorized = True
         auth_url = None
+        vehicles_list = tesla_preheat.session.vehicle_list()
     else:
         auth_url = tesla_preheat.session.authorization_url()
 
@@ -24,7 +26,8 @@ def main():
     if scheduler.bgscheduler.get_job('start_preheat'):
         next_run_time = scheduler.bgscheduler.get_job(job_id='start_preheat').next_run_time
     return render_template('index.html', authorized=authorized, auth_url=auth_url, settings=settings,
-                           next_preheat=next_run_time, rear_seat_heaters=tesla_preheat.rear_seat_heaters)
+                           next_preheat=next_run_time, rear_seat_heaters=tesla_preheat.rear_seat_heaters,
+                           vehicles_list=vehicles_list)
 
 
 @app.route('/preheat_now', methods=['GET'])
@@ -38,6 +41,7 @@ def preheat_now():
 def save_settings_to_file():
     data = request.get_json()
     save_settings(data)
+    tesla_preheat.get_vehicles()
     scheduler.configure()
     return redirect(url_for('main'))
 
