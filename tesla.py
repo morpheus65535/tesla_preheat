@@ -16,7 +16,9 @@ class TeslaPreHeat:
         self.session = teslapy.Tesla(email=settings.get('general', 'email'),
                                      cache_file=os.path.join(os.path.join(os.path.dirname(__file__),
                                                                           'config',
-                                                                          'cache.json')))
+                                                                          'cache.json')),
+                                     retry=3,
+                                     timeout=30)
         self.vehicle = None
         self.vehicle_data = None
         self.rear_seat_heaters = False
