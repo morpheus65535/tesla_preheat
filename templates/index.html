@@ -111,6 +111,15 @@
                             </div>
                         </div>
 
+                        {% if heated_steering_wheel %}
+                        <div class="row">
+                            <div class="ui right aligned toggle checkbox" id="heated_steering_wheel">
+                                <input type="checkbox" name="heated_steering_wheel" id="heated_steering_wheel_input">
+                                <label for="passenger_heater_input">Heated steering wheel</label>
+                            </div>
+                        </div>
+                        {% endif %}
+
                         <div class="ui fitted divider"></div>
 
                         <div class="row">
@@ -346,6 +355,10 @@
         $("#passenger_heater").checkbox('check');
     }
 
+    if ( "{{ settings.getboolean('heater', 'heated_steering_wheel') }}" === "True" ) {
+        $("#heated_steering_wheel").checkbox('check');
+    }
+
     $("#passenger_heat_temp").slider('set value', "{{ settings.get('heater', 'passenger_temp') }}", fireChange=true)
 
     $('#front_left').dropdown('set selected',"{{ settings.get('seat', 'front_left_temp')}}");
@@ -405,6 +418,9 @@
             'passenger_temp': $('#passenger_heat_temp').slider('get value'),
             'front_left_temp': $('#front_left').dropdown('get value'),
             'front_right_temp': $('#front_right').dropdown('get value'),
+            {% if heated_steering_wheel %}
+            'heated_steering_wheel': $('#heated_steering_wheel').checkbox('is checked'),
+            {% endif %}
             {% if rear_seat_heaters %}
             'rear_left_temp': $('#rear_left').dropdown('get value'),
             'rear_center_temp': $('#rear_center').dropdown('get value'),

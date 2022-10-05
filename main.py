@@ -27,7 +27,7 @@ def main():
         next_run_time = scheduler.bgscheduler.get_job(job_id='start_preheat').next_run_time
     return render_template('index.html', authorized=authorized, auth_url=auth_url, settings=settings,
                            next_preheat=next_run_time, rear_seat_heaters=tesla_preheat.rear_seat_heaters,
-                           vehicles_list=vehicles_list)
+                           heated_steering_wheel=tesla_preheat.heated_steering_wheel, vehicles_list=vehicles_list)
 
 
 @app.route('/preheat_now', methods=['GET'])

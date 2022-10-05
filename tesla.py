@@ -23,6 +23,7 @@ class TeslaPreHeat:
         self.vehicle = None
         self.vehicle_data = None
         self.rear_seat_heaters = False
+        self.heated_steering_wheel = False
         self.get_vehicles()
 
     def get_vehicles(self):
@@ -46,6 +47,10 @@ class TeslaPreHeat:
                     if 'rear_seat_heaters' in self.vehicle_data['vehicle_config']:
                         self.rear_seat_heaters = False if self.vehicle_data['vehicle_config']['rear_seat_heaters'] == 0\
                             else True
+                if 'climate_state' in self.vehicle_data:
+                    if 'steering_wheel_heater' in self.vehicle_data['climate_state']:
+                        self.heated_steering_wheel = True if \
+                            self.vehicle_data['climate_state']['steering_wheel_heater'] else False
             except teslapy.HTTPError as e:
                 logger.exception(e)
 
@@ -64,14 +69,25 @@ class TeslaPreHeat:
                                  passenger_temp=settings.get('heater', 'passenger_temp'))
         logger.info('Vehicle cabin heater started')
 
+        # Heated steering wheel
+        if settings.getboolean('heater', 'heated_steering_wheel'):
+            logger.info('Starting heated steering wheel...')
+            self.vehicle.command('REMOTE_STEERING_WHEEL_HEATER_REQUEST', on='true')
+            logger.info('Vehicle heated steering wheel started')
+        else:
+            self.vehicle.command('REMOTE_STEERING_WHEEL_HEATER_REQUEST', on='false')
+            logger.info('Vehicle heated steering wheel not requested; skipping')
+
         # Max defrost
         if settings.getboolean('heater', 'defrost'):
             logger.info('Starting max defrost...')
             self.vehicle.command('MAX_DEFROST', on='true')
             logger.info('Max defrost started')
-        else:
-            self.vehicle.command('MAX_DEFROST', on='false')
-            logger.info('Vehicle cabin defrost not requested; skipping.')
+
+        # commented out because it turns off heated steering wheel
+        # else:
+        #    self.vehicle.command('MAX_DEFROST', on='false')
+        #    logger.info('Vehicle cabin defrost not requested; skipping.')
 
         # Driver seat heater
         logger.info('Setting driver seat heater level')
@@ -122,19 +138,7 @@ class TeslaPreHeat:
 
     def wake_vehicle(self):
         logger.info('Waking up vehicle...')
-        status = None
-        for x in range(1, 10):
-            status = self.vehicle.get_vehicle_summary()
-            if status['state'] == 'online':
-                break
-            else:
-                self.vehicle.sync_wake_up()
-                time.sleep(5)
-                continue
-        if not status:
-            raise VehicleUnavailableException()
-        elif status['state'] != 'online':
-            raise VehicleUnavailableException()
+        self.vehicle.sync_wake_up()
         logger.info('Vehicle awake and waiting for command')
 
 
