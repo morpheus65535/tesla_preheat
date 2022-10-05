@@ -48,7 +48,7 @@ def save_settings(data):
         settings['heater']['driver_temp'] = str(data['driver_temp'])
         settings['heater']['passenger_enabled'] = str(data['passenger_enabled'])
         settings['heater']['passenger_temp'] = str(data['passenger_temp'])
-        if tesla_preheat.vehicle_data['climate_state']['steering_wheel_heater']:
+        if tesla_preheat.heated_steering_wheel:
             settings['heater']['heated_steering_wheel'] = str(data['heated_steering_wheel'])
         settings['seat']['front_left_temp'] = data['front_left_temp']
         settings['seat']['front_right_temp'] = data['front_right_temp']

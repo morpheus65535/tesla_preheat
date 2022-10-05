@@ -2,7 +2,6 @@ import teslapy
 import os
 from datetime import datetime
 import logging
-import time
 from pytz import utc, timezone
 
 from config import settings
@@ -49,8 +48,8 @@ class TeslaPreHeat:
                             else True
                 if 'climate_state' in self.vehicle_data:
                     if 'steering_wheel_heater' in self.vehicle_data['climate_state']:
-                        self.heated_steering_wheel = True if \
-                            self.vehicle_data['climate_state']['steering_wheel_heater'] else False
+                        self.heated_steering_wheel = False if \
+                            self.vehicle_data['climate_state']['steering_wheel_heater'] is None else True
             except teslapy.HTTPError as e:
                 logger.exception(e)
 

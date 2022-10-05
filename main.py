@@ -4,7 +4,6 @@ from datetime import datetime
 
 from config import settings, save_settings
 from scheduler_config import scheduler
-from log_config import logger
 from tesla import tesla_preheat
 
 
