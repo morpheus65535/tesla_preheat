@@ -55,7 +55,12 @@ class TeslaPreHeat:
 
     def start_preheat(self):
         self.get_vehicles()
-        self.wake_vehicle()
+        try:
+            self.wake_vehicle()
+        except teslapy.VehicleError as e:
+            # unable to wake vehicle
+            logger.error(e)
+            return
         self.vehicle.command('CLIMATE_ON')
 
         # Cabin heater
@@ -137,7 +142,7 @@ class TeslaPreHeat:
 
     def wake_vehicle(self):
         logger.info('Waking up vehicle...')
-        self.vehicle.sync_wake_up()
+        self.vehicle.sync_wake_up(timeout=300)
         logger.info('Vehicle awake and waiting for command')
 
 
