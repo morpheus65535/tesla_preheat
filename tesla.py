@@ -12,13 +12,13 @@ TZ = os.getenv('TZ') or utc
 
 class TeslaPreHeat:
     def __init__(self):
-        retry = teslapy.Retry(total=3, status_forcelist=(408, 500, 502, 503, 504))
+        retry = teslapy.Retry(total=5, status_forcelist=(408, 500, 502, 503, 504))
         self.session = teslapy.Tesla(email=settings.get('general', 'email'),
                                      cache_file=os.path.join(os.path.join(os.path.dirname(__file__),
                                                                           'config',
                                                                           'cache.json')),
                                      retry=retry,
-                                     timeout=30)
+                                     timeout=60)
         self.vehicle = None
         self.vehicle_data = None
         self.rear_seat_heaters = False
